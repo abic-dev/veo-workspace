@@ -412,49 +412,89 @@ def render_results_table():
 
     st.header("4️⃣ 생성된 영상 목록")
 
-    # 데이터프레임 생성
-    df_data = []
+    # 각 영상을 카드 형식으로 표시
     for i, result in enumerate(results):
-        # 체크박스 상태 가져오기
-        is_selected = st.session_state.selected_videos.get(result["task_id"], False)
+        with st.container():
+            # 상단: 체크박스, 번호, 상태
+            header_col1, header_col2, header_col3, header_col4 = st.columns(
+                [0.5, 1.5, 4, 2]
+            )
 
-        df_data.append(
-            {
-                "선택": is_selected,
-                "번호": i + 1,
-                "프롬프트": (
-                    result["prompt"][:50] + "..."
-                    if len(result["prompt"]) > 50
-                    else result["prompt"]
-                ),
-                "상태": result["status"],
-                "영상 URL": result["video_url"],
-                "task_id": result["task_id"],
-            }
-        )
+            with header_col1:
+                is_selected = st.checkbox(
+                    "선택",
+                    value=st.session_state.selected_videos.get(
+                        result["task_id"], False
+                    ),
+                    key=f"check_{result['task_id']}",
+                    label_visibility="collapsed",
+                )
+                st.session_state.selected_videos[result["task_id"]] = is_selected
 
-    # 테이블 표시
-    edited_df = st.data_editor(
-        pd.DataFrame(df_data),
-        column_config={
-            "선택": st.column_config.CheckboxColumn(
-                "선택",
-                help="다운로드할 영상 선택",
-                default=False,
-            ),
-            "영상 URL": st.column_config.LinkColumn(
-                "영상 보기", help="클릭하여 영상 확인", display_text="🎬 보기"
-            ),
-        },
-        disabled=["번호", "프롬프트", "상태", "영상 URL", "task_id"],
-        hide_index=True,
-        use_container_width=True,
-        key="results_table",
-    )
+            with header_col2:
+                st.markdown(f"### 영상 {i + 1}")
 
-    # 선택 상태 업데이트
-    for _, row in edited_df.iterrows():
-        st.session_state.selected_videos[row["task_id"]] = row["선택"]
+            with header_col3:
+                # 프롬프트 미리보기 (한 줄로)
+                st.markdown(
+                    f"**프롬프트:** {result['prompt'][:80]}..."
+                    if len(result["prompt"]) > 80
+                    else f"**프롬프트:** {result['prompt']}"
+                )
+
+            with header_col4:
+                # 상태
+                if result["status"] == "completed":
+                    st.success("✅ 완료")
+                elif result["status"] == "failed":
+                    st.error("❌ 실패")
+                else:
+                    st.info("⏳ 진행중")
+
+            # 하단: 상세 정보와 미리보기
+            detail_col1, detail_col2, detail_col3 = st.columns([5, 1, 2])
+
+            with detail_col1:
+                # 전체 프롬프트 표시
+                with st.expander("전체 프롬프트 보기"):
+                    st.text(result["prompt"])
+
+                # URL 표시
+                if result.get("video_url"):
+                    st.text_input(
+                        "영상 URL:",
+                        value=result["video_url"],
+                        key=f"url_{result['task_id']}",
+                        disabled=True,
+                    )
+
+            with detail_col2:
+                # 빈 공간
+                st.empty()
+
+            with detail_col3:
+                # 작은 영상 미리보기
+                if result["status"] == "completed" and result.get("video_url"):
+                    st.markdown("**미리보기:**")
+                    try:
+                        st.video(result["video_url"])
+                    except:
+                        # 비디오 로드 실패시 링크로 대체
+                        st.info("미리보기 불가")
+                        st.markdown(f"[🎬 새 탭에서 보기]({result['video_url']})")
+                elif result["status"] == "pending" or result["status"] == "processing":
+                    st.info("🎬 생성 중...")
+                elif result["status"] == "failed":
+                    st.error("생성 실패")
+                    if result.get("error_message"):
+                        st.caption(
+                            result["error_message"][:50] + "..."
+                            if len(result.get("error_message", "")) > 50
+                            else result.get("error_message")
+                        )
+
+            st.divider()
+
     save_session()
 
 
@@ -515,7 +555,7 @@ def main():
         1. **프롬프트 입력**: 빈 줄(엔터 두 번)로 구분하여 여러 프롬프트를 입력하세요.
         2. **생성 시작**: 🚀 버튼을 클릭하여 영상 생성을 시작하세요.
         3. **진행 상황**: 실시간으로 생성 진행 상황을 확인하세요.
-        4. **결과 확인**: 표에서 생성된 영상을 확인하고 필요한 것을 선택하세요.
+        4. **영상 확인**: 생성된 영상을 미리보기로 재생하고 필요한 것을 선택하세요.
         5. **다운로드**: 전체 결과를 CSV 파일로 다운로드하세요.
         """
         )
