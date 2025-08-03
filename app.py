@@ -17,6 +17,7 @@ import streamlit as st
 from dotenv import load_dotenv
 
 from config import (
+    API_KEY,
     DEFAULT_ASPECT_RATIO,
     DEFAULT_VIDEO_DURATION,
     ERROR_MESSAGES,
@@ -69,8 +70,6 @@ def init_session():
             logger.error(f"세션 복원 실패: {e}")
 
     # 기본값 설정
-    if "api_key" not in st.session_state:
-        st.session_state.api_key = os.getenv("API_KEY", "")
     if "prompts" not in st.session_state:
         st.session_state.prompts = []
     if "generation_tasks" not in st.session_state:
@@ -88,7 +87,6 @@ def save_session():
     try:
         session_data = {
             "session_id": st.session_state.session_id,
-            "api_key": st.session_state.api_key,
             "prompts": st.session_state.prompts,
             "generation_tasks": st.session_state.generation_tasks,
             "generation_results": st.session_state.generation_results,
@@ -120,7 +118,7 @@ def get_api_key():
 
 def render_prompt_input():
     """프롬프트 입력 섹션"""
-    st.header("1️⃣ 영상 프롬프트 입력")
+    st.header("📝 영상 프롬프트 입력")
     st.markdown("각 프롬프트는 **빈 줄(엔터 두 번)**로 구분하여 입력하세요.")
 
     # 텍스트 영역
@@ -515,9 +513,10 @@ def main():
         st.markdown(
             """
         1. **프롬프트 입력**: 빈 줄(엔터 두 번)로 구분하여 여러 프롬프트를 입력하세요.
-        2. **생성 시작**: 버튼을 클릭하여 영상 생성을 시작하세요.
-        3. **결과 확인**: 표에서 생성된 영상을 확인하고 필요한 것을 선택하세요.
-        4. **다운로드**: 전체 결과를 CSV 파일로 다운로드하세요.
+        2. **생성 시작**: 🚀 버튼을 클릭하여 영상 생성을 시작하세요.
+        3. **진행 상황**: 실시간으로 생성 진행 상황을 확인하세요.
+        4. **결과 확인**: 표에서 생성된 영상을 확인하고 필요한 것을 선택하세요.
+        5. **다운로드**: 전체 결과를 CSV 파일로 다운로드하세요.
         """
         )
 
@@ -540,37 +539,45 @@ def main():
         if pending_count > 0:
             st.info(f"🔄 진행 중인 작업: {pending_count}개")
             if st.button("상태 업데이트"):
-                asyncio.run(check_generation_status(st.session_state.api_key))
+                api_key = get_api_key()
+                asyncio.run(check_generation_status(api_key))
                 st.rerun()
 
+    # API 키 가져오기
+    api_key = get_api_key()
+
     # 메인 컨텐츠
-    api_key = render_api_key_section()
-
-    if not api_key:
-        st.warning("⚠️ API 키를 입력해주세요.")
-        return
-
-    st.divider()
-
     prompts = render_prompt_input()
 
+    # 생성 버튼 섹션
     st.divider()
 
-    # 생성 버튼
-    st.header("2️⃣ 영상 생성")
+    # 프롬프트가 입력된 경우에만 생성 버튼 활성화
+    button_disabled = not prompts or len(prompts) == 0
 
-    col1, col2, col3 = st.columns([1, 2, 1])
+    # 생성 버튼을 더 눈에 띄게 표시
+    if prompts:
+        st.markdown(f"### 🎬 총 {len(prompts)}개의 영상을 생성합니다")
+
+    col1, col2, col3 = st.columns([1, 3, 1])
     with col2:
         if st.button(
-            UI_TEXTS["generate_button"], type="primary", use_container_width=True
+            "🚀 영상 생성 시작" if prompts else "⚠️ 프롬프트를 입력해주세요",
+            type="primary" if prompts else "secondary",
+            use_container_width=True,
+            disabled=button_disabled,
+            help=(
+                "프롬프트를 입력한 후 클릭하세요"
+                if not prompts
+                else f"{len(prompts)}개의 영상을 생성합니다"
+            ),
         ):
-            if not prompts:
-                st.error("프롬프트를 입력해주세요.")
-            else:
-                with st.spinner("영상 생성 중... 잠시만 기다려주세요."):
-                    video_settings = get_video_settings()
-                    asyncio.run(generate_videos(api_key, prompts, video_settings))
-                    st.rerun()
+            with st.spinner(
+                f"🎬 {len(prompts)}개의 영상을 생성 중... 잠시만 기다려주세요."
+            ):
+                video_settings = get_video_settings()
+                asyncio.run(generate_videos(api_key, prompts, video_settings))
+                st.rerun()
 
     # 진행 상황 섹션
     if st.session_state.generation_results:
