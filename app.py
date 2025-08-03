@@ -21,6 +21,7 @@ from config import (
     DEFAULT_ASPECT_RATIO,
     DEFAULT_VIDEO_DURATION,
     ERROR_MESSAGES,
+    MAX_CONCURRENT_REQUESTS,
     UI_TEXTS,
     VIDEO_MODEL,
 )
@@ -119,7 +120,9 @@ def get_api_key():
 def render_prompt_input():
     """프롬프트 입력 섹션"""
     st.header("📝 영상 프롬프트 입력")
-    st.markdown("각 프롬프트는 **빈 줄(엔터 두 번)**로 구분하여 입력하세요.")
+    st.markdown(
+        "각 프롬프트는 **빈 줄(엔터 두 번)**로 구분하여 입력하세요. 최대 20개까지 동시 처리 가능합니다."
+    )
 
     # 텍스트 영역
     prompt_text = st.text_area(
@@ -342,7 +345,7 @@ def render_generation_progress():
     )
 
     # 진행 중인 작업 상세
-    st.subheader("🔄 실시간 진행 상황")
+    st.subheader(f"🔄 실시간 진행 상황 (최대 {MAX_CONCURRENT_REQUESTS}개 동시 처리)")
 
     for i, result in enumerate(results):
         if result["status"] in ["pending", "processing"]:
@@ -613,7 +616,7 @@ def main():
             ),
         ):
             with st.spinner(
-                f"🎬 {len(prompts)}개의 영상을 생성 중... 잠시만 기다려주세요."
+                f"🎬 {len(prompts)}개의 영상을 생성 중... (최대 {MAX_CONCURRENT_REQUESTS}개 동시 처리)"
             ):
                 video_settings = get_video_settings()
                 asyncio.run(generate_videos(api_key, prompts, video_settings))

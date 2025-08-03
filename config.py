@@ -20,7 +20,7 @@ API_STATUS_ENDPOINT = "/api/v1/veo/record-info"
 # 영상 생성 기본 설정
 DEFAULT_VIDEO_DURATION = 8  # 기본 8초
 DEFAULT_ASPECT_RATIO = "16:9"
-MAX_CONCURRENT_REQUESTS = int(os.getenv("MAX_CONCURRENT_REQUESTS", "5"))
+MAX_CONCURRENT_REQUESTS = int(os.getenv("MAX_CONCURRENT_REQUESTS", "20"))
 VIDEO_MODEL = "veo3_fast"  # veo3 모델 사용
 
 # 재시도 설정
