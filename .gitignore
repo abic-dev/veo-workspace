@@ -28,7 +28,7 @@ build/
 Thumbs.db
 
 # Streamlit
-.streamlit/
+.streamlit/secrets.toml
 
 # Output files
 *.csv
