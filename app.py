@@ -424,9 +424,38 @@ def render_results_table():
         return
 
     st.header("4️⃣ 생성된 영상 목록")
+    
+    # 생성된 영상 개수 표시
+    st.info(f"📊 총 {len(results)}개의 영상이 생성되었습니다.")
+    
+    # 페이지네이션 설정
+    items_per_page = 10
+    total_pages = (len(results) - 1) // items_per_page + 1
+    
+    # 페이지 선택
+    if "current_page" not in st.session_state:
+        st.session_state.current_page = 1
+        
+    col1, col2, col3 = st.columns([2, 3, 2])
+    with col2:
+        page = st.selectbox(
+            "페이지 선택",
+            range(1, total_pages + 1),
+            index=st.session_state.current_page - 1,
+            format_func=lambda x: f"{x} / {total_pages}",
+            key="page_selector"
+        )
+        st.session_state.current_page = page
+    
+    # 현재 페이지의 결과만 표시
+    start_idx = (page - 1) * items_per_page
+    end_idx = min(start_idx + items_per_page, len(results))
+    page_results = results[start_idx:end_idx]
+    
+    st.markdown(f"### 📄 {start_idx + 1} - {end_idx} 번째 영상")
 
     # 각 영상을 카드 형식으로 표시
-    for i, result in enumerate(results):
+    for i, result in enumerate(page_results, start=start_idx):
         with st.container():
             # 상단: 체크박스, 번호, 상태
             header_col1, header_col2, header_col3, header_col4 = st.columns(
@@ -489,12 +518,20 @@ def render_results_table():
                 # 작은 영상 미리보기
                 if result["status"] == "completed" and result.get("video_url"):
                     st.markdown("**미리보기:**")
-                    try:
-                        st.video(result["video_url"])
-                    except:
-                        # 비디오 로드 실패시 링크로 대체
-                        st.info("미리보기 불가")
-                        st.markdown(f"[🎬 새 탭에서 보기]({result['video_url']})")
+                    # 미리보기 버튼으로 변경 (성능 개선)
+                    preview_key = f"preview_{result['task_id']}"
+                    if st.button("🎬 미리보기", key=f"btn_{preview_key}"):
+                        st.session_state[preview_key] = not st.session_state.get(preview_key, False)
+                    
+                    if st.session_state.get(preview_key, False):
+                        try:
+                            st.video(result["video_url"])
+                        except:
+                            # 비디오 로드 실패시 링크로 대체
+                            st.info("미리보기 불가")
+                            st.markdown(f"[🎬 새 탭에서 보기]({result['video_url']})")
+                    else:
+                        st.markdown(f"[🔗 새 탭에서 보기]({result['video_url']})")
                 elif result["status"] == "pending" or result["status"] == "processing":
                     st.info("🎬 생성 중...")
                 elif result["status"] == "failed":
