@@ -183,6 +183,10 @@ MAX_CONCURRENT_REQUESTS = 20
 
 1. **ModuleNotFoundError**: `pip install -r requirements.txt` 재실행
 2. **API 키 오류**: `.env` 파일의 API 키가 올바른지 확인
+3. **Streamlit Cloud 배포 오류**: 
+   - `requirements.txt`에서 버전 제거 시도
+   - Secrets 설정 확인
+   - 앱 재배포 (Reboot app)
 3. **연결 오류**: 인터넷 연결 상태 확인
 
 ## 라이센스

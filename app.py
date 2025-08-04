@@ -7,6 +7,7 @@ import json
 import logging
 import os
 import re
+import tempfile
 import time
 import uuid
 from datetime import datetime
@@ -58,7 +59,8 @@ st.set_page_config(
 )
 
 # 세션 파일 경로
-SESSION_FILE = "session_data.json"
+# Streamlit Cloud에서는 임시 디렉토리 사용
+SESSION_FILE = os.path.join(tempfile.gettempdir(), "session_data.json")
 
 
 def init_session():
