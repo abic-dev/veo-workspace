@@ -153,6 +153,30 @@ veo-workspace/
 - 생성된 영상은 일정 시간 후 삭제될 수 있으니 즉시 다운로드하세요
 - Veo3 모델은 기본적으로 8초 길이의 영상을 생성합니다
 
+## Streamlit Cloud 배포
+
+### 1. 배포 준비
+
+1. GitHub에 프로젝트 푸시
+2. [Streamlit Cloud](https://streamlit.io/cloud)에 로그인
+3. "New app" 클릭
+
+### 2. Secrets 설정
+
+Streamlit Cloud 앱 설정에서 Secrets 추가:
+
+```toml
+API_KEY = "your_bearer_token_here"
+MAX_CONCURRENT_REQUESTS = 20
+```
+
+### 3. 배포
+
+1. GitHub 저장소 선택
+2. Branch: `master` 또는 `main`
+3. Main file path: `app.py`
+4. Deploy 클릭
+
 ## 문제 해결
 
 ### 일반적인 문제들

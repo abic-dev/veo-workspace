@@ -4,13 +4,23 @@
 
 import os
 
-from dotenv import load_dotenv
+# Streamlit Cloud와 로컬 환경 모두 지원
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
 
-# 환경변수 로드
-load_dotenv()
-
-# API 설정
-API_KEY = os.getenv("API_KEY", "")
+try:
+    import streamlit as st
+    # Streamlit Cloud에서는 st.secrets 사용
+    if hasattr(st, 'secrets') and 'API_KEY' in st.secrets:
+        API_KEY = st.secrets["API_KEY"]
+    else:
+        API_KEY = os.getenv("API_KEY", "")
+except ImportError:
+    # Streamlit이 없는 경우 환경 변수 사용
+    API_KEY = os.getenv("API_KEY", "")
 
 # API 설정
 API_BASE_URL = "https://api.kie.ai"
@@ -20,7 +30,15 @@ API_STATUS_ENDPOINT = "/api/v1/veo/record-info"
 # 영상 생성 기본 설정
 DEFAULT_VIDEO_DURATION = 8  # 기본 8초
 DEFAULT_ASPECT_RATIO = "16:9"
-MAX_CONCURRENT_REQUESTS = int(os.getenv("MAX_CONCURRENT_REQUESTS", "20"))
+# MAX_CONCURRENT_REQUESTS 설정
+try:
+    import streamlit as st
+    if hasattr(st, 'secrets') and 'MAX_CONCURRENT_REQUESTS' in st.secrets:
+        MAX_CONCURRENT_REQUESTS = int(st.secrets["MAX_CONCURRENT_REQUESTS"])
+    else:
+        MAX_CONCURRENT_REQUESTS = int(os.getenv("MAX_CONCURRENT_REQUESTS", "20"))
+except:
+    MAX_CONCURRENT_REQUESTS = int(os.getenv("MAX_CONCURRENT_REQUESTS", "20"))
 VIDEO_MODEL = "veo3_fast"  # veo3 모델 사용
 
 # 재시도 설정

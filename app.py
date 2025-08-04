@@ -14,7 +14,14 @@ from pathlib import Path
 
 import pandas as pd
 import streamlit as st
-from dotenv import load_dotenv
+
+# Streamlit Cloud와 로컬 환경 모두 지원
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    # Streamlit Cloud에서는 dotenv가 필요 없음
+    pass
 
 from config import (
     API_KEY,
