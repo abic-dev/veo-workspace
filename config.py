@@ -7,14 +7,16 @@ import os
 # Streamlit Cloud와 로컬 환경 모두 지원
 try:
     from dotenv import load_dotenv
+
     load_dotenv()
 except ImportError:
     pass
 
 try:
     import streamlit as st
+
     # Streamlit Cloud에서는 st.secrets 사용
-    if hasattr(st, 'secrets') and 'API_KEY' in st.secrets:
+    if hasattr(st, "secrets") and "API_KEY" in st.secrets:
         API_KEY = st.secrets["API_KEY"]
     else:
         API_KEY = os.getenv("API_KEY", "")
@@ -33,7 +35,8 @@ DEFAULT_ASPECT_RATIO = "16:9"
 # MAX_CONCURRENT_REQUESTS 설정
 try:
     import streamlit as st
-    if hasattr(st, 'secrets') and 'MAX_CONCURRENT_REQUESTS' in st.secrets:
+
+    if hasattr(st, "secrets") and "MAX_CONCURRENT_REQUESTS" in st.secrets:
         MAX_CONCURRENT_REQUESTS = int(st.secrets["MAX_CONCURRENT_REQUESTS"])
     else:
         MAX_CONCURRENT_REQUESTS = int(os.getenv("MAX_CONCURRENT_REQUESTS", "20"))

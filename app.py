@@ -18,6 +18,7 @@ import streamlit as st
 # Streamlit Cloud와 로컬 환경 모두 지원
 try:
     from dotenv import load_dotenv
+
     load_dotenv()
 except ImportError:
     # Streamlit Cloud에서는 dotenv가 필요 없음
